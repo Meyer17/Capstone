@@ -5,6 +5,7 @@ Here are the tasks that need to be completed for the music transcription applica
 ### Todo
 
 - [ ] Train Maximum Likelihoood Model for Polyphonic Audio Frames
+- [ ] Create Polyphonic Estimator
 - [ ] Add k-means sound source clustering
   - [ ] Implement measures of timbre 
 - [ ] Rhythm Tracking
