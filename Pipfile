@@ -7,6 +7,7 @@ name = "pypi"
 matplotlib = "==3.3.3"
 numpy = "==1.19.3"
 scipy = "==1.5.4"
+music21 = "6.3.0"
 
 [dev-packages]
 
