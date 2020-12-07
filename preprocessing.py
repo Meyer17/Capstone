@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 from scipy.signal import hamming
+from scipy.signal import spectrogram
 
 from dataclasses import dataclass
 
@@ -80,9 +81,35 @@ class AudioPreprocessor:
             smpl_rate, data = wavfile.read(wav_file)
             print("Sample Rate: {}".format(smpl_rate))
             print("Number of Samples: {}".format(len(data)))
+
+            data = np.mean(data, axis=1)
+            freqs, times, Sx = spectrogram(data, fs=smpl_rate, window='hanning',
+                                      nperseg=2048, noverlap=2048 - 441,
+                                      detrend=False, scaling='spectrum')
+            print(Sx.shape)
+            Sx = np.sqrt(Sx)
+            print(Sx)
+
+
         except FileNotFoundError:
             print("Error: File Not Found")
         else:
+            f, ax = plt.subplots(figsize=(7, 4))
+            #ax.pcolormesh(times, freqs/1000, 10 * np.log10(Sx), cmap='viridis')
+            #ax.pcolormesh(Sx)
+
+            t = np.arange(Sx.shape[1])
+            t = t/smpl_rate * 1000 # milliseconds
+
+            for i in range(Sx.shape[0]):
+                plt.plot(t, Sx[i])
+                plt.show()
+            
+
+            ax.set_ylabel('Frequency [kHz]')
+            ax.set_xlabel('Time [ms]')
+            plt.show()
+
             # take the average if the input is stereo channel
             if data.shape[1] == 2:
                 data = (data[:, 0] + data[:, 1])/2.0
@@ -116,3 +143,23 @@ class AudioPreprocessor:
                 plt.show()
             
             return frames
+
+# returns the midi number for a pitch in htz
+def midi(pitch):
+    """
+        Returns the midi number representation for a pitch
+        in Hz
+
+        Parameters
+        ----------
+        pitch : float
+            The pitch in units of Hz to convert
+        
+        Returns
+        -------
+        midi : int
+            The nearest midi number corresponding to the frequency
+    """
+    if pitch <= 0:
+        raise ValueError
+    return int(12 * np.log2(pitch/440) + 69)

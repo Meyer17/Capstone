@@ -1,7 +1,12 @@
 from preprocessing import AudioPreprocessor
+from preprocessing import midi
 from peak_detection import PeakDetector
+import yin
 
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.io import wavfile
+
 import sys, getopt
 
 def main(argv):
@@ -27,13 +32,31 @@ def main(argv):
     # A seperate module encapsulating the functionality of
     # these modules should return all sets of sound
     # source streams to the next high-level stage of the
-    # transcription pipeline 
-    processor = AudioPreprocessor(2048, 441, 8)
-    peak_detector = PeakDetector(100, 8)
-    audio_frames = processor.process(inputfile)
+    # transcription pipeline
 
-    for frame in audio_frames:
-        peak_detector.get_peaks(frame)
+    smpl_rate, data = wavfile.read(inputfile)
+    data = np.mean(data, axis=1) # averages audio if it is stereo
+
+    frame_sz = int(.06 * smpl_rate) # number of samples in 60 miliseconds
+    frames = np.array([data[0:frame_sz]])
+
+    for i in range(frame_sz,len(data)-frame_sz,frame_sz):
+        frames = np.append(frames, [data[i:i+frame_sz]], axis=0)
+
+    pitches = np.array([])
+
+    # to get the time index of the pitches multiply its
+    # the index of the pitch by the frame size (samples)
+    # and divide by the sample rate
+    for frame in frames:
+        p = yin.get_pitch(frame, smpl_rate)
+        pitches = np.append(pitches, p)
+        if p > 0:
+            m = midi(p)
+            print("GOT PITCH: {} MIDI ".format(m))
+
+    plt.plot(pitches)
+    plt.show()
 
 if __name__ == "__main__":
     main(sys.argv[1:])
