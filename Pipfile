@@ -4,13 +4,12 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-matplotlib = "3.0.3"
-numpy = "1.18.5"
-scipy = "1.4.1"
-music21 = "5.7.2"
-kivy = "1.11.1"
+music21 = "==6.3.0"
+numpy = "==1.19.3"
+matplotlib = "==3.3.3"
+scipy = "==1.5.4"
 
 [dev-packages]
 
-[requires]  
-python_version = "3.5"
+[requires]
+python_version = "3.9"

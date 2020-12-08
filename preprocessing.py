@@ -22,7 +22,7 @@ class Frame:
             the global time index of this frame with respect to the audio track
             it derives from
     """
-    data: np.array = np.zeros(1)
+    data: np.ndarray = np.array([])
     silent: bool = False
     track_index: int = 0
 
