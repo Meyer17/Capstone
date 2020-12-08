@@ -5,6 +5,11 @@ Here are the tasks that need to be completed for the music transcription applica
 ### Todo
 
 - [ ] Train Maximum Likelihoood Model for Polyphonic Audio Frames
+  - [ ] Peak-Region Likelihood Model
+    - [ ] Spurious Peak Model
+    - [ ] Frequency Deviation Model
+    - [ ] Amplitude Model
+  - [ ] NonPeak-Region Likelihood Model
 - [ ] Create Polyphonic Estimator
 - [ ] Add k-means sound source clustering
   - [ ] Implement measures of timbre 
@@ -12,7 +17,7 @@ Here are the tasks that need to be completed for the music transcription applica
 - [ ] Music Transcription
 
 ### In Progress
-- [ ] Filter Spectrogram peaks through thresholds   
+- [ ] Training Spurious Peak Model   
 
 ### Done ✓
 
