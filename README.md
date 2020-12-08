@@ -5,6 +5,15 @@ This project is a program that attempts to transcribe sheet music from raw audio
 
 ## Usage
 
+The command line tool can be installed from the repository by running
+
+`pip install .`
+
+To run the program in the pipenv shell simply run the command
+
+`shtmkr -i <inputfile> -o <outputfile>`
+
+## Contributing
 The project manages dependencies using pipenv. To install pipenv run
 
 `pip install pipenv`
@@ -20,6 +29,7 @@ The project can then be ran in the pipenv shell. To activate the pipenv shell ru
 `pipenv shell`
 
 
-To run the program in the pipenv shell simply run the command
+To test the program install the package with
 
-`python main.py -i <inputfile> -o <outputfile>`
+`pip install -e .`
+
