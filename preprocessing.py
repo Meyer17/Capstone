@@ -163,5 +163,3 @@ def midi(pitch):
     if pitch <= 0:
         raise ValueError
     return int(12 * np.log2(pitch/440) + 69)
-
-print('Test')
