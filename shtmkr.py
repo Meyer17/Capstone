@@ -3,7 +3,7 @@ from preprocessing import midi
 from peak_detection import PeakDetector
 import tracking
 import yin
-
+import music21 as music
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.io import wavfile
@@ -68,3 +68,11 @@ def run():
 
     plt.plot(pitches)
     plt.show()
+    
+# to convert to sheet music using music21
+    program_stream = stream.Stream() #create stream to fill with notes
+    for i in sheet_notes:
+        this_note = music.note.Note(i[0]) #attach note names
+        this_note.duration = note.duration.Duration(i[1]*4) # *4 so that it can print in 4/4 time, appends duration of note
+        program_stream.append(this_note) #adds to stream
+    program_stream.show() #prints stream
