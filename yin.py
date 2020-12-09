@@ -20,6 +20,19 @@ def __diff(audio, max_t):
              df[tau] += tmp * tmp
     return df
 
+def __fast_diff(audio, max_t):
+    x = np.array(audio, np.float64)
+    w = x.size
+    tau_max = min(max_t, w)
+    x_cumsum = np.concatenate((np.array([0.]), (x * x).cumsum()))
+    size = w + tau_max
+    p2 = (size // 32).bit_length()
+    nice_numbers = (16, 18, 20, 24, 25, 27, 30, 32)
+    size_pad = min(x * 2 ** p2 for x in nice_numbers if x * 2 ** p2 >= size)
+    fc = np.fft.rfft(x, size_pad)
+    conv = np.fft.irfft(fc * fc.conjugate())[:tau_max]
+    return x_cumsum[w:w - tau_max:-1] + x_cumsum[w] - x_cumsum[:tau_max] - 2 * conv
+
 # cummulative mean normalized difference function
 def __cumm_mean_diff(df):
     N = len(df)
@@ -55,7 +68,7 @@ def get_pitch(frame, smpl_rate, min_freq=20, max_freq=600, h_thrs=0.1):
     """
     max_t = int(smpl_rate/min_freq)
     min_t = int(smpl_rate/max_freq)
-    df = __diff(frame, max_t)
+    df = __fast_diff(frame, max_t)
     cmdf = __cumm_mean_diff(df)
 
     # returns the smallest period value that results in cmdf below threshold
