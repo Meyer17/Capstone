@@ -1,6 +1,7 @@
 from preprocessing import AudioPreprocessor
 from preprocessing import midi
 from peak_detection import PeakDetector
+import tracking
 import yin
 
 import matplotlib.pyplot as plt
@@ -51,17 +52,19 @@ def run():
     # to get the time index of the pitches multiply its
     # the index of the pitch by the frame size (samples)
     # and divide by the sample rate
+
+    temp = [] #this is from max, just sneaking this in so that I have an input for my function, i'm sure there's a proper list i'm just missing
     for frame in frames:
         p = yin.get_pitch(frame, smpl_rate)
         pitches = np.append(pitches, p)
         if p > 0:
             m = midi(p)
+            temp.append(m)
             print("GOT PITCH: {} MIDI ".format(m))
+    
+    #This is max, i'm just going to tack my code onto the end of this for now, I can clean it up later :)
+    sheet_notes = tracking.sheet_input(temp)
+    print(sheet_notes)
 
     plt.plot(pitches)
     plt.show()
-
-"""
-if __name__ == "__main__":
-    main(sys.argv[1:])
-"""
