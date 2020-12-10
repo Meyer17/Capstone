@@ -158,8 +158,8 @@ def midi(pitch):
         Returns
         -------
         midi : int
-            The nearest midi number corresponding to the frequency
+            The nearest midi number corresponding to the frequency.
     """
     if pitch <= 0:
-        raise ValueError
+        return 0
     return int(12 * np.log2(pitch/440) + 69)
