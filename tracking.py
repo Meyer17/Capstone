@@ -147,16 +147,115 @@ def relative_length(input, val):#Takes list of compressed notes with absolute le
                     convert = False
     return out
 
+#will take an array of notes and will return an array of all the notes with accidentals, ordered,
+#Input array must only contain notes with sharps and the output will not have the accidental
+#Ex: [F#2, C#3, G1, C#4] --> [C, F]),
+def accidentals(input):
+    #Couldn't figure out a way to get .copy() to work rip
+    output = []
+    for i in range(len(input)):
+        output.append(input[i][0])
+    
+    index = 0
+    #Removing notes without accidentals
+    while(index < len(output)):
+        if(len(output[index]) == 2): #if there is no accidental the string length will be 2
+            output.pop(index)
+        else:
+            index += 1
+     
+    #Removing the octave information from the notes / the sharp symbol
+    for i in range(len(output)):
+        output[i] = output[i][:1]
+        
+    #Removing repeat tones
+    for i in range(len(output)): 
+        index = i+1 #+1 avoids removing oneself
+        while(index < len(output)):
+            if(output[i] == output[index]):
+                output.pop(index)
+            else:
+                index += 1
+                
+    #Reusing my archaic sorting algorithm lmao
+    index = 0
+    while(index < len(output)-1): 
+        if(ord(output[index][0]) > ord(output[index+1][0])):
+            temp = output[index]
+            output[index] = output[index+1]
+            output[index+1] = temp
+            index = 0
+        else:
+            index += 1
+    return output
+
+#Determins the key signature given a list of notes, list can be in either relative or absolute lengths
+#Key signature is outputted as a number, + = how many sharps, - = how many flats
+#Still a WIP, cannot handle notes outside of the keysignature, always makes 5/7 accidentals sharp
+def key_sig(input):
+    #Getting the tones
+    acc = accidentals(input)
+    #if there are no accidentals then the key signature is blank
+    if(len(acc) == 0):
+        return 0
+    
+    #Creating templates to compare to
+    sharps = [ord("F"), ord("C"),ord("G"),ord("D"),ord("A"),ord("E"),ord("B")]
+    flats = [ord("A"), ord("D"), ord("G"), ord("C"), ord("F"), ord("B"), ord("E")]
+    
+    #Cutting templates to the right size
+    for i in range(7-len(acc)):
+        sharps.pop()
+        flats.pop()
+    
+    #finding the sum of the ascii values of the array acc and comparing to templates
+    sum = 0 #getting sum
+    for i in range(len(acc)):
+        sum += ord(acc[i])
+    #comparing values
+    if(sum == np.sum(sharps)):
+        return len(acc)
+    if(sum == np.sum(flats)):
+        return -1 * len(acc) # - integer indicates that the accidentals are flats
+    
+    return 0 #returns 0 if all else fails
+
+#Takes an array of notes and a key signature and alters the notes to match the key signature
+def convert_to_keysig(input, keysig):
+    if(keysig >= 0):
+        return #change is only needed if the key signature contains flats
+    flats = ["A#", "D#", "G#", "C#", "F#", "B#", "E#"]
+    conversion = ["B-", "E-", "A-", "D-", "G-", "C-", "F-"]
+    #getting lists to proper lengths
+    for i in range(7-np.abs(keysig)):
+        flats.pop()
+        conversion.pop()
+    #goes through input, if it contains a value that matches a note which should be a flat, it is converted
+    for i in range(len(input)):
+        if(len(input[i][0]) == 3):
+            for j in range(np.abs(keysig)):
+                if(input[i][0][:2] == flats[j]):
+                    input[i][0] = conversion[j]
+                    break
+    return
+
 def sheet_input(input):#Takes the raw data and outputs a list to be converted into sheet music
     #converting raw data into compressed note format with absolute lengths
     Notes = notes(input)
-    c_notes = compress(Notes) 
+    c_notes = compress(Notes)
+    
+    #Calculating the key signature and altering the notation of notes
+    key_signature = key_sig(c_notes)
+    convert_to_keysig(c_notes, key_signature)
+    
     #determining the relative note lengths
     lengths = length(c_notes)
     time = total_length(c_notes)
     time = time + (time%4) #ensures for now that time is divisible by 4
-    quarter = quarter_note(lengths, time)
+    quarter, time_signature = quarter_note(lengths, time)
+    
     #converting compressed notes into notes containg relative lengths
     table = note_table(quarter)
     c_notes = relative_length(c_notes, table)
-    return c_notes#, time, lengths, quarter, table
+    
+    return c_notes, time_signature, key_signature#, time, lengths, quarter, table
