@@ -8,7 +8,7 @@ setuptools.setup(
     version="0.0.1",
     entry_points={
         'console_scripts': [
-            'shtmkr=shtmkr:run'
+            'shtmkr=runner:run'
         ]
     },
     author="Max Coy, Bridgette Meyer, Benigno Chihuahua, Jacob Tycko",
