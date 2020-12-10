@@ -70,9 +70,18 @@ def run():
     plt.show()
     
 # to convert to sheet music using music21
-    program_stream = stream.Stream() #create stream to fill with notes
+    program_stream = music.stream.Stream()  # create stream to be filled with note values, key sig, time sig, etc
+
+    ts_converted = str(time_sig[0]) + '/' + str(time_sig[1])  # create input for TimeSignature output: string
+    program_stream_ts = music.meter.TimeSignature(ts_converted)  # adds time signature value
+    program_stream.append(program_stream_ts)  # adds time signature to the stream
+
+    program_stream_ks = music.key.KeySignature(key_sig)
+    program_stream.append(program_stream_ks)
+
     for i in sheet_notes:
-        this_note = music.note.Note(i[0]) #attach note names
-        this_note.duration = note.duration.Duration(i[1]*4) # *4 so that it can print in 4/4 time, appends duration of note
-        program_stream.append(this_note) #adds to stream
-    program_stream.show() #prints stream
+        this_note = music.note.Note(i[0])  # add note name
+        this_note.duration = music.note.duration.Duration(i[1])  # add notes' rhythms
+        program_stream.append(this_note)  # add notes to stream
+
+    program_stream.show()  # print the music
