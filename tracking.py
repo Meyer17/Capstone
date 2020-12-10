@@ -1,6 +1,6 @@
 import numpy as np
 
-def note(x): #brute force way of converting number to note, there's probably a predefined function for this that I 
+def note(x): #brute force way of converting numbers to notes, there's probably a predefined function for this that I 
     #couldn't find that probably cuts the run time into 1/10 but oh well
     i = x % 12
     j = np.floor(x/12)
@@ -109,42 +109,12 @@ def quarter_note(leng, t):#beeeg logic time, decides what length is a quarter no
             return Len[i] 
     return Len[0] #returns the smallest full note as a last ditch attempt
 
-def note_table(input):#Takes quarter note length and creates a conversion table from 32nd notes to 4 whole notes
-    values = []
-    values.append(-1)#to prevent a division by 0 error in relative length
-    values.append(-1)#to keep the length of values an even integer
-    
-    for i in range(3): #adds notes smaller than quarter note
-        values.append(int(input / 2**(3-i)))#full note
-        values.append(int(values[-1]*1.5))#dotted note
-                  
-    #adds quarter note, normal/dotted
-    values.append(input)#full note
-    values.append(int(input*1.5))#dotted note
-                  
-    for i in range(4): #adds notes larger than quarter note
-        values.append(input*2**(i+1))#full note
-        values.append(int(values[-1]*1.5))#dotted note             
-    return values
-
-def relative_length(input, val):#Takes list of compressed notes with absolute lengths and converts to relative lengths
+#rework of relative length function
+#Takes list of compressed notes with absolute lengths and converts to relative lengths
+def relative_length(input, quarter):
     out = input.copy()
     for i in range(len(out)):
-        convert = True
-        index = 2 #starts at 2 instead of 0 because of the 2 placeholder values we added in note_table
-        while(convert): #changes absolute length to relative length of input[i]
-            if(out[i][1] == val[index]):
-                if(index%2 == 0):#full note
-                    out[i][1] = (2**((index)/2)) / 64
-                else: #dotted note
-                    out[i][1] = ( 2**((index-1)/2) / 64 ) * 1.5 #steps back to the last full note then multiplies by 1.5
-                convert = False #exits while loop, steps forward in for loop
-            else:
-                index += 1 #value not found on current index, stepping through val array 
-                
-                if(index >= len(val)):#to prevent an index out of bound
-                    out[i][1] = 8.5 #8.5 will arbitrarily indicate an error for now
-                    convert = False
+        out[i][1] = out[i][1] / quarter
     return out
 
 #will take an array of notes and will return an array of all the notes with accidentals, ordered,
@@ -255,7 +225,6 @@ def sheet_input(input):#Takes the raw data and outputs a list to be converted in
     quarter, time_signature = quarter_note(lengths, time)
     
     #converting compressed notes into notes containg relative lengths
-    table = note_table(quarter)
-    c_notes = relative_length(c_notes, table)
+    c_notes = relative_length(c_notes, quarter)
     
     return c_notes, time_signature, key_signature#, time, lengths, quarter, table
