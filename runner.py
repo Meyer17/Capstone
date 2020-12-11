@@ -63,7 +63,7 @@ def run():
             print("GOT PITCH: {} MIDI ".format(m))
     
     #This is max, i'm just going to tack my code onto the end of this for now, I can clean it up later :)
-    sheet_notes = tracking.sheet_input(temp)
+    sheet_notes, time_sig, key_sig = tracking.sheet_input(temp)
     print(sheet_notes)
 
     plt.plot(pitches)
