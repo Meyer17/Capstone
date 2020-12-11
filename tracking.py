@@ -3,7 +3,7 @@ import numpy as np
 def note(x): #brute force way of converting numbers to notes, there's probably a predefined function for this that I 
     #couldn't find that probably cuts the run time into 1/10 but oh well
     i = x % 12
-    j = np.floor(x/12)
+    j = np.floor(x/12) -1
     if(i==0):
         letter = chr(67)
     elif(i==1):
