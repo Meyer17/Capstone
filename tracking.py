@@ -146,17 +146,7 @@ def accidentals(input):
                 output.pop(index)
             else:
                 index += 1
-                
-    #Reusing my archaic sorting algorithm lmao
-    index = 0
-    while(index < len(output)-1): 
-        if(ord(output[index][0]) > ord(output[index+1][0])):
-            temp = output[index]
-            output[index] = output[index+1]
-            output[index+1] = temp
-            index = 0
-        else:
-            index += 1
+
     return output
 
 #Determins the key signature given a list of notes, list can be in either relative or absolute lengths
