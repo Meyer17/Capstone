@@ -10,7 +10,6 @@ from scipy.signal import argrelextrema
 
 import matplotlib.pyplot as plt
 
-# difference function
 def __diff(audio, max_t):
     N = len(audio)
     df = [0] * max_t
@@ -36,43 +35,19 @@ def __fast_diff(audio, max_t):
 # cummulative mean normalized difference function
 def __cumm_mean_diff(df):
     N = len(df)
+    if np.sum(df[1:]) == 0:
+        return np.insert(df[1:], 0, 1)
     cmndf = df[1:] * np.array(range(1, N)) / np.cumsum(df[1:]).astype(float) #scipy method
     return np.insert(cmndf, 0, 1)
 
 # computes the yin algorithm on a single signal frame
 def get_pitch(frame, smpl_rate, min_freq=20, max_freq=600, h_thrs=0.1):
-    """
-        Retrieves the fundamental frequency of an audio frame by applying
-        the yin algorithm.
-
-        Parameters
-        ----------
-        frame : np.array
-            Array of audio amplitude data
-        smpl_rate : int 
-            Frequency in Hz at which audio frame is sampled at
-        min_freq : float, optional
-            Min frequency that should be expected in audio frame.
-            (default is 20Hz)
-        max_freq : float, optional
-            Max frequency that should be searched for in audio frame. 
-            (default is 600Hz)
-        h_thrs : float, optional
-            Absolute harmonic threshold that defines the boundary on the
-            difference function for determining pitch period.
-        
-        Returns
-        -------
-        pitch : float
-            The fundamental frequency of the audio frame in Hz.
-    """
     max_t = int(smpl_rate/min_freq)
     min_t = int(smpl_rate/max_freq)
     df = __fast_diff(frame, max_t)
     cmdf = __cumm_mean_diff(df)
 
     # returns the smallest period value that results in cmdf below threshold
-    # TODO: test with just a search space over the minimum of the cmdfs
     t = min_t
     while t < max_t:
         if cmdf[t] < h_thrs:

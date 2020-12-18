@@ -1,38 +1,29 @@
-from preprocessing import AudioPreprocessor
-from preprocessing import midi
-from peak_detection import PeakDetector
-import tracking
 import yin
+import tracking
+import peak_detection as pd
+from preprocessing import midi, dB, Frame
+
+import model
+
+import numpy as np
 import music21 as music
 import matplotlib.pyplot as plt
-import numpy as np
 from scipy.io import wavfile
 
 import sys, getopt
 
 def run():
+    np.seterr(all='raise')
+
     argv = sys.argv[1:]
-    inputfile = ''
-    outputfile = ''
-    try:
-        opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
-    except getopt.GetoptError:
-        print('shtmkr -i <inputfile> -o <outputfile>')
-        sys.exit(2)
-    for opt, arg in opts:
-        if opt == '-h':
-            print('shtmkr -i <inputfile> -o <outputfile>')
-            sys.exit()
-        elif opt in ("-i", "--ifile"):
-            inputfile = arg
-        elif opt in ("-o", "--ofile"):
-            outputfile = arg
+    inputfile, outputfile = parse_input(sys.argv[1:])
 
     # code below is simply here for development purposes
     # A seperate module encapsulating the functionality of
     # these modules should return all sets of sound
     # source streams to the next high-level stage of the
     # transcription pipeline
+
     try:
         smpl_rate, data = wavfile.read(inputfile)
     except FileNotFoundError:
@@ -49,10 +40,9 @@ def run():
 
     pitches = np.array([])
 
-    # to get the time index of the pitches multiply its
+    # to get the time index of the pitches multiply
     # the index of the pitch by the frame size (samples)
     # and divide by the sample rate
-
     temp = [] #this is from max, just sneaking this in so that I have an input for my function, i'm sure there's a proper list i'm just missing
     for frame in frames:
         p = yin.get_pitch(frame, smpl_rate)
@@ -60,16 +50,16 @@ def run():
         if p > 0:
             m = midi(p)
             temp.append(m)
-            print("GOT PITCH: {} MIDI ".format(m))
-    
-    #This is max, i'm just going to tack my code onto the end of this for now, I can clean it up later :)
-    sheet_notes, time_sig, key_sig = tracking.sheet_input(temp)
-    print(sheet_notes)
+            #print("GOT PITCH: {} MIDI ".format(m))
 
     plt.plot(pitches)
     plt.show()
+
+    #This is max, i'm just going to tack my code onto the end of this for now, I can clean it up later :)
+    sheet_notes, time_sig, key_sig = tracking.sheet_input(temp)
+    print(sheet_notes)
     
-# to convert to sheet music using music21
+    # to convert to sheet music using music21
     program_stream = music.stream.Stream()  # create stream to be filled with note values, key sig, time sig, etc
 
     ts_converted = str(time_sig[0]) + '/' + str(time_sig[1])  # create input for TimeSignature output: string
@@ -85,3 +75,28 @@ def run():
         program_stream.append(this_note)  # add notes to stream
 
     program_stream.show()  # print the music
+    # to convert to sheet music using music21
+    program_stream = music.stream.Stream() #create stream to fill with notes
+    for i in sheet_notes:
+        this_note = music.note.Note(i[0]) #attach note names
+        this_note.duration = music.note.duration.Duration(i[1]*4) # *4 so that it can print in 4/4 time, appends duration of note
+        program_stream.append(this_note) #adds to stream
+    program_stream.show() #prints stream
+
+def parse_input(argv):
+    inputfile = ''
+    outputfile = ''
+    try:
+        opts, args = getopt.getopt(argv,"hi:o:",["ifile=","ofile="])
+    except getopt.GetoptError:
+        print('shtmkr -i <inputfile> -o <outputfile>')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print('shtmkr -i <inputfile> -o <outputfile>')
+            sys.exit()
+        elif opt in ("-i", "--ifile"):
+            inputfile = arg
+        elif opt in ("-o", "--ofile"):
+            outputfile = arg
+    return inputfile, outputfile

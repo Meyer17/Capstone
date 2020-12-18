@@ -100,14 +100,14 @@ def quarter_note(leng, t):#beeeg logic time, decides what length is a quarter no
     #Checking for common time signatures
     for i in range(len(Len)):#Checking for  4 4 time
         if(measure/4 == Len[i]):
-            return Len[i]
+            return Len[i], (4, 4)
     for i in range(len(Len)):#Checking for 3 4 time
         if(measure/3 == Len[i]):
-            return Len[i]
+            return Len[i], (3, 4)
     for i in range(len(Len)):#Checking for 2 4 time
         if(measure/2 == Len[i]):
-            return Len[i] 
-    return Len[0] #returns the smallest full note as a last ditch attempt
+            return Len[i] , (2, 4)
+    return Len[0], (4, 4) #returns the smallest full note as a last ditch attempt
 
 #rework of relative length function
 #Takes list of compressed notes with absolute lengths and converts to relative lengths

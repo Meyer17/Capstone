@@ -27,6 +27,11 @@ class Frame:
     track_index: int = 0
     smpl_rate : int = 0
 
+def hz(midi):
+    if midi <= 0:
+        return 0
+    return 2**((midi - 69)/12) * 440
+
 def midi(pitch):
     """
         Returns the midi number representation for a pitch
@@ -42,6 +47,9 @@ def midi(pitch):
         midi : int
             The nearest midi number corresponding to the frequency.
     """
+    pitch = np.asarray(pitch)
+    if pitch.all() <= 0:
+        return 0
     p = np.around(12 * np.log2(pitch/440) + 69)
     return np.int32(p)
 
@@ -107,7 +115,7 @@ def process(wav_file, framelen, frame_interval, silence_thrs=.075):
             frame_data = data[findex : findex + framelen]
             frame_data *= win[0 : len(frame_data)]
             is_silent = __is_silent(frame_data, silence_thrs)
-            frames.append(Frame(frame_data, is_silent, findex))
+            frames.append(Frame(frame_data, is_silent, findex, smpl_rate))
         
         print("Number of Frames: {}".format(len(frames)))
 

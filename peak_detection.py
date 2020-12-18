@@ -1,9 +1,54 @@
-from preprocessing import midi, dB
+from preprocessing import midi, dB, hz
 
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import argrelextrema
 from scipy.ndimage import gaussian_filter1d
+
+
+#pitch is fundamental frequency
+def peak_harmonic(peak_pitch, pitch):
+    f = peak_pitch
+    F0 = pitch
+
+    h = np.around(2 ** ((f - F0)/12))
+    return h
+
+# pitch is fundamental frequency
+def peak_dev(peak_pitch, pitch):
+    h = peak_harmonic(peak_pitch, pitch)
+
+    if h == 0:
+        return 0
+    return np.abs(peak_pitch - pitch - 12*np.log2(h))
+
+# returns deviation to nearest harmonic
+def min_peak_dev(peak_pitch, pitches):
+    min_dev = np.inf
+    closest_F0 = 0
+    dev = 0.0
+
+    for pitch in pitches:
+        dev = peak_dev(peak_pitch, pitch)
+        if dev < min_dev:
+            min_dev = dev
+            closest_F0 = pitch 
+    return min_dev, closest_F0
+
+def get_peak_region(frame, peaks, padding_fctr=4):
+    
+    freq_frame = dB(np.absolute(__sfft(frame.data, padding_fctr)))
+    freq_frame = freq_frame[:int(len(freq_frame)/2)]
+
+    peak_region = []
+    min_freq = 0.0
+    max_freq = 0.0
+    for peak in peaks:
+        min_freq = hz(peak[0]) - hz(.25)
+        max_freq = hz(peak[0]) + hz(.25)
+        for i in range(min_freq, max_freq):
+            peak_region.append(i)
+    return np.unique(peak_region)
 
 def get_peaks(frame, peak_thrs=8, noise_thrs=50, gauss_sigma=8.0, padding_fctr=4):
     """ Returns a set of peaks with their frequency and amplitude values
@@ -33,13 +78,13 @@ def get_peaks(frame, peak_thrs=8, noise_thrs=50, gauss_sigma=8.0, padding_fctr=4
     peak_midi = midi(peak_freqs)
     peak_points = np.column_stack((peak_midi, peak_ampls))
 
-
-    if __debug__:
-        print(peak_points)
-        plt.plot(freq_frame)
-        plt.plot(smooth_freq_frame)
-        plt.scatter(peak_freqs, peak_ampls)
-        plt.show()
+    #if __debug__:
+    #    plt.plot(freq_frame)
+    #    plt.plot(smooth_freq_frame)
+    #    plt.scatter(peak_freqs, peak_ampls)
+    #   plt.ylabel('Amplitude (dB)')
+    #    plt.xlabel('Frequency (Hz)')
+    #    plt.show()
 
     return peak_points
 

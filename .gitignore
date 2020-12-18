@@ -2,6 +2,9 @@
 package.json
 .idea
 
+#large data
+*.npy
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
