@@ -19,6 +19,10 @@ def __diff(audio, max_t):
              df[tau] += tmp * tmp
     return df
 
+"""
+Optimization attributed to:
+https://stackoverflow.com/questions/46001299/optimize-computation-of-the-difference-function
+"""
 def __fast_diff(audio, max_t):
     x = np.array(audio, np.float64)
     w = x.size
