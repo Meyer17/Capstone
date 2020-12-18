@@ -13,7 +13,7 @@ The command line tool can be installed from the repository by running
 
 `pip install -e .`
 
-To run the simply run the command with the inpute file parameter
+To run the program simply run the command with the inpute file parameter
 
 `shtmkr -i <inputfile> -o <outputfile> -p <polyphony>`
 
