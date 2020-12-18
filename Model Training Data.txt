@@ -1,0 +1,4 @@
+The files for training model.py were too big for github and so attached is 
+a link to a google drive folder containing the training set:
+
+https://drive.google.com/drive/folders/1nPsAQvjjFuLvsLi5jfxdhgC4mmxn4Yn1?usp=sharing
