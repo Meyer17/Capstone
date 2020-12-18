@@ -30,9 +30,8 @@ def run():
     if polyphony > 1:
         #TODO: check if model parameters are stored locally and are valid
         #before deciding to train model
-        #model = pm.Model
-        #model = pm.train_model(model)
-        model = pm.load_model()
+        model = pm.Model
+        model = pm.train_model(model)
         #TODO: store runner module constants elsewhere and add configurability
         #options to command line
         frames = preprocessing.process(inputfile, 4096, 2048)
