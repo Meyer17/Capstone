@@ -11,4 +11,6 @@ The command line tool can be installed from the repository by running
 
 To run the simply run the command with the inpute file parameter
 
-`shtmkr -i <inputfile> -o <outputfile>`
+`shtmkr -i <inputfile> -o <outputfile> -p <polyphony>`
+
+The output and polyphony parameters are optional
