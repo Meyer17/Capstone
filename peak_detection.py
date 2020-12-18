@@ -32,11 +32,10 @@ def min_peak_dev(peak_pitch, pitches):
         dev = peak_dev(peak_pitch, pitch)
         if dev < min_dev:
             min_dev = dev
-            closest_F0 = pitch 
+            closest_F0 = pitch
     return min_dev, closest_F0
 
-def get_peak_region(frame, peaks, padding_fctr=4):
-    
+def get_peak_region(frame, peaks, region_dev=.25, padding_fctr=4):
     freq_frame = dB(np.absolute(__sfft(frame.data, padding_fctr)))
     freq_frame = freq_frame[:int(len(freq_frame)/2)]
 
@@ -44,20 +43,27 @@ def get_peak_region(frame, peaks, padding_fctr=4):
     min_freq = 0.0
     max_freq = 0.0
     for peak in peaks:
-        min_freq = hz(peak[0]) - hz(.25)
-        max_freq = hz(peak[0]) + hz(.25)
-        for i in range(min_freq, max_freq):
-            peak_region.append(i)
+        min_freq = peak[0] - region_dev
+        max_freq = peak[0] + region_dev
+        peak_region.extend(np.arange(min_freq, max_freq, .5).tolist())
     return np.unique(peak_region)
 
 def get_peaks(frame, peak_thrs=8, noise_thrs=50, gauss_sigma=8.0, padding_fctr=4):
     """ Returns a set of peaks with their frequency and amplitude values
         from the smoothed gaussian convolved spectrogram frame.
-        
+
         Parameters
         ----------
         frame : Frame
             Raw audio frame for analysis
+        peak_thrs : float
+            Local threshold between peak and smoothed peak
+        noise_thrs : float
+            Lower global threshold measured from the maximum peak
+        gauss_sigma : float
+            Gaussian convolution filter parameter
+        padding_fctr : float
+            Zero padding factor for fast fourier transform of audio frame
     """
     # get frequency frame and convolve with gaussian
     freq_frame = dB(np.absolute(__sfft(frame.data, padding_fctr)))
@@ -82,7 +88,7 @@ def get_peaks(frame, peak_thrs=8, noise_thrs=50, gauss_sigma=8.0, padding_fctr=4
     #    plt.plot(freq_frame)
     #    plt.plot(smooth_freq_frame)
     #    plt.scatter(peak_freqs, peak_ampls)
-    #   plt.ylabel('Amplitude (dB)')
+    #    plt.ylabel('Amplitude (dB)')
     #    plt.xlabel('Frequency (Hz)')
     #    plt.show()
 

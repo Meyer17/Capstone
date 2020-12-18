@@ -40,55 +40,43 @@ class Model:
     # spurious peak likelihood distribution estimation
     spurious_kde : gaussian_kde = None
 
-    #threshold for polyphonic estimation
-    poly_thrs : float = .88
-
-def estimate_pitches(frame, model):
+def estimate_pitches(frame, model, polyphony=1):
     peaks = pd.get_peaks(frame)
-    peak_region = midi(pd.get_peak_region(frame, peaks))
+    peak_region = pd.get_peak_region(frame, peaks)
 
     fund_freqs = []
-    for __ in range(MAX_POLYPHONY):
+    for __ in range(polyphony):
         max_freq = 0
         max_lk = 0
         for freq in peak_region:
             freqs = np.append(np.asarray(fund_freqs), freq)
-            l = likelihood(model, freqs, peak_region)
+            l = likelihood(model, freqs, peaks)
             if l > max_lk:
                 max_lk = l
                 max_freq = freq
         fund_freqs.append(max_freq)
 
-    num_sources = estimate_polyphony(model, fund_freqs, peak_region)
-    return fund_freqs[:num_sources]
-
-
-def likelihood(model, fund_freqs, peak_region):
+    return fund_freqs
+ 
+def likelihood(model, fund_freqs, peaks):
     # peak likelihood
     likelihood = 1.0
-    for f in peak_region:
-        dev_p = norm(model.peak_dev_mean, model.peak_dev_std).pdf(f) #dk
+    for f in peaks:
+        freq = f[0]
+        amp = f[1]
+        dev, F0 = pd.min_peak_dev(freq, fund_freqs)
+        harm = pd.peak_harmonic(freq, F0)
         ff_mean = model.freq_fund_mean
         ff_cov = model.freq_fund_cov
-        amp_p = model.kde.pdf(f)/multi_norm(ff_mean, ff_cov).pdf(f) #(a, f, h ) (f, h)
-        s_peak_p = model.spurious_kde.pdf(fund_freqs) #(f, a)
-        s_p = model.spurious_probability
-        likelihood *= (1-s_p)*amp_p*dev_p + (s_p * s_peak_p)
-    return s_p * dev_p * amp_p * s_peak_p
-
-def estimate_polyphony(model, freqs, peak_region):
-    if len(freqs) < 9:
-        return -1
-    m = delta(model, freqs, MAX_POLYPHONY, peak_region)
-    t = model.poly_thrs
-    for i in range(1,MAX_POLYPHONY):
-        n = delta(model, freqs, i, peak_region)
-        if n > (t*m):
-            return i
-    return MAX_POLYPHONY
-
-def delta(model, freqs, n, peak_region):
-    return np.log(likelihood(model, freqs[:n], peak_region)) - np.log(likelihood(model, freqs[0], peak_region))
+        if dev < .25:
+            dev_p = norm(model.peak_deviation_mean, model.peak_deviation_std).pdf(dev) #p(d)
+        else:
+            dev_p = 0.0
+        amp_p = model.kde.pdf((amp, freq, harm))/multi_norm(ff_mean, ff_cov).pdf((freq, harm)) #p(a, f, h )/p(f, h)
+        s_peak_p = model.spurious_kde.pdf((freq, amp)) #p(f, a | s = 1)
+        s_p = model.spurious_probability #p(s)
+        likelihood *= ((1-s_p)*dev_p*amp_p) + (s_p*s_peak_p)
+    return likelihood
 
 def train_model(model):
     chords = np.load(chords_file, allow_pickle=True)
@@ -148,6 +136,7 @@ def train_model(model):
     model.spurious_kde = gaussian_kde(spurious_peaks.T)
 
     save_model(model)
+    return model
 
 def save_model(model, filename="model.pkl"):
     with open(filename, 'wb') as model_file:

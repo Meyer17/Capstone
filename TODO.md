@@ -4,7 +4,7 @@ Here are the tasks that need to be completed for the music transcription applica
 
 ### Todo
 - [ ] Add k-means sound source clustering
-  - [ ] Implement timbre measures 
+  - [ ] Implement timbre measures
 
 ### In Progress
 - [ ] NonPeak-Region Likelihood Model

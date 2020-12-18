@@ -50,8 +50,8 @@ def midi(pitch):
     pitch = np.asarray(pitch)
     if pitch.all() <= 0:
         return 0
-    p = np.around(12 * np.log2(pitch/440) + 69)
-    return np.int32(p)
+    p = 12 * np.log2(pitch/440) + 69
+    return p
 
 def dB(amplitude):
     """
