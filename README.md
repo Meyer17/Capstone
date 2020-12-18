@@ -5,6 +5,10 @@ This project is a program that attempts to transcribe sheet music from raw audio
 
 ## Usage
 
+Dependencies can be installed globally with:
+
+`pipenv install --system`
+
 The command line tool can be installed from the repository by running
 
 `pip install -e .`
