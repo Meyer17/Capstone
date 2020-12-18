@@ -11,6 +11,7 @@ import peak_detection as pd
 from preprocessing import midi
 
 import numpy as np
+import pandas as pds
 import matplotlib.pyplot as plt
 from scipy.stats import gaussian_kde, norm
 from scipy.stats import multivariate_normal as multi_norm 
@@ -79,6 +80,30 @@ def likelihood(model, fund_freqs, peaks):
     return likelihood
 
 def train_model(model):
+
+    classifications = np.genfromtxt('data/labels.csv',delimiter=',',skip_header=1)
+    devs = np.genfromtxt('data/devs.csv', delimiter=',', skip_header=1)
+    normal_peaks = np.genfromtxt('data/normal_peaks.csv', delimiter=',', skip_header=1)
+    spurious_peaks = np.genfromtxt('data/spurious_peaks.csv', delimiter=',', skip_header=1)
+
+    dev_mean, dev_std = norm.fit(devs)
+
+    model.spurious_probability = np.mean(classifications)
+    model.peak_deviation_mean = dev_mean
+    model.peak_deviation_std = dev_std
+
+    model.kde = gaussian_kde(normal_peaks.T)
+    normal_peaks = np.delete(normal_peaks, 0, 1) # delete amplitude column
+    freq_fund_mean = np.mean(normal_peaks, axis=0)
+    freq_fund_cov = np.cov(normal_peaks, rowvar=0)
+    model.freq_fund_mean = freq_fund_mean
+    model.freq_fund_cov = freq_fund_cov
+
+    model.spurious_kde = gaussian_kde(spurious_peaks.T)
+
+    return model
+
+def extract_data():
     chords = np.load(chords_file, allow_pickle=True)
 
     # binary label for spurious = 1 or normal = 0
@@ -106,46 +131,10 @@ def train_model(model):
                 labels.append(1)
                 spurious_peaks.append((peak[0], peak[1]))
 
-    classifications = np.array(labels)
-    print(classifications)
-    print(np.mean(classifications))
-    plt.hist(classifications)
-    plt.show()
-
-    devs = np.asarray(devs)
-    dev_mean, dev_std = norm.fit(devs)
-    print(dev_mean)
-    print(dev_std)
-
-
-    model.spurious_probability = np.mean(classifications)
-    model.peak_deviation_mean = dev_mean
-    model.peak_deviation_std = dev_std
-
-    normal_peaks = np.asarray(normal_peaks)
-    model.kde = gaussian_kde(normal_peaks.T)
-    normal_peaks = np.delete(normal_peaks, 0, 1) # delete amplitude column
-    freq_fund_mean = np.mean(normal_peaks, axis=0)
-    freq_fund_cov = np.cov(normal_peaks, rowvar=0)
-    model.freq_fund_mean = freq_fund_mean
-    model.freq_fund_cov = freq_fund_cov
-    print(freq_fund_mean)
-    print(freq_fund_cov)
-
-    spurious_peaks = np.asarray(spurious_peaks)
-    model.spurious_kde = gaussian_kde(spurious_peaks.T)
-
-    save_model(model)
-    return model
-
-def save_model(model, filename="model.pkl"):
-    with open(filename, 'wb') as model_file:
-        pickle.dump(model, model_file, pickle.HIGHEST_PROTOCOL)
-
-def load_model(filename="model.pkl"):
-    with open(filename, 'rb') as model_file:
-        model = pickle.load(model_file)
-    return model
+    pds.DataFrame(np.array(labels)).to_csv('data/labels.csv', index=False)
+    pds.DataFrame(np.array(normal_peaks)).to_csv('data/normal_peaks.csv', index=False)
+    pds.DataFrame(np.array(spurious_peaks)).to_csv('data/spurious_peaks.csv', index=False)
+    pds.DataFrame(np.array(devs)).to_csv('data/devs.csv', index=False)
 
 def get_chord_frame(chord):
     cf = np.zeros(chord.shape[2])
